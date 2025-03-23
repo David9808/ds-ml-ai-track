@@ -23,7 +23,7 @@ if uploaded_file:
     elif file_extension == "xlsx":
         data = pd.read_excel(uploaded_file)  
 
-     elif file_extension == "txt":
+    elif file_extension == "txt":
         try:
             lines = uploaded_file.getvalue().decode('utf-8').splitlines()
             raw = []
