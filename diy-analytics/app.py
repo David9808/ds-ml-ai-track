@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import re
 from llm import handle_query
 from execute import execute_generated_code
 import io
@@ -7,7 +8,7 @@ import io
 # Streamlit UI
 st.title("DIY Analytics")
 
-uploaded_file = st.file_uploader("Upload your CSV, EXCEL, or JSON dataset to get started!", type=["csv", "xlsx", "json"])
+uploaded_file = st.file_uploader("Upload your CSV, EXCEL, TXT or JSON dataset to get started!", type=["csv", "xlsx", "json","txt"])
 
 
 if uploaded_file:
@@ -21,6 +22,26 @@ if uploaded_file:
 
     elif file_extension == "xlsx":
         data = pd.read_excel(uploaded_file)  
+
+     elif file_extension == "txt":
+        try:
+            lines = uploaded_file.getvalue().decode('utf-8').splitlines()
+            raw = []
+            date_pattern = r'\d+/\d+/\d+'  
+
+            for line in lines:
+                line = line.strip()
+                match = re.search(r'(\d+/\d+/\d+),[\s\u202f]*(\d{1,2}:\d{2}[\s\u202f]*[AP]M)\s*-\s*([^:]*):\s*(.*)', line)
+
+                if match:
+                    raw.append([match.group(1), match.group(2), match.group(3), match.group(4).replace(",", " ")])
+                elif raw and not re.match(date_pattern, line):
+                    raw[-1][-1] += " " + line.replace(",", " ")
+
+            data = pd.DataFrame(raw, columns=['Date', 'Time', 'Identifier', 'Content'])
+
+        except Exception:
+            print("Unsupported file format: Please upload a timestamped log file")
     
     else: 
         st.error(f"Unsupported file format: {file_extension}. Please upload a CSV, XLSX, or JSON file")
