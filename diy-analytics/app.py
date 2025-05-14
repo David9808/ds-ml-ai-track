@@ -6,9 +6,10 @@ from execute import execute_generated_code
 import io
 
 # Streamlit UI
+st.set_page_config(page_title="Do It Yourself", page_icon="cropped_image.png")
 st.title("DIY Analytics")
 
-uploaded_file = st.file_uploader("Upload your CSV, EXCEL, TXT or JSON dataset to get started!", type=["csv", "xlsx", "json","txt"])
+uploaded_file = st.file_uploader("Upload your CSV, EXCEL, TXT or JSON data set to get started!", type=["csv", "xlsx", "json","txt"])
 
 
 if uploaded_file:
@@ -50,7 +51,7 @@ if uploaded_file:
     st.dataframe(data.head())
 
     if st.checkbox("Show Data Summary"):
-        missing_values, duplicated_values, summary_statistics = st.tabs(["Missing Values", "Duplicated Values", "Summary Statistics"])
+        missing_values, duplicated_values, num_statistics,cat_statistics  = st.tabs(["Missing Values", "Duplicated Values", "Summary Statistics(Numerical)","Summary Statistics(Categorical)"])
         total_missing_values_by_column = data.isnull().sum()
         missing_values.write(total_missing_values_by_column)
         missing_values.write(f"There are {total_missing_values_by_column.sum()} missing values in your dataset.")
@@ -59,8 +60,11 @@ if uploaded_file:
         duplicated_values.write(total_duplicated_values_by_column)
         duplicated_values.write(f"There are {total_duplicated_values_by_column.sum()} duplicated values in your dataset.")
 
-        summary_statistics.write("#### Summary Statistics")
-        summary_statistics.dataframe(data.describe())
+        num_statistics.write("#### Summary Statistics")
+        num_statistics.dataframe(data.describe())
+
+        cat_statistics.write("#### Summary Statistics")
+        cat_statistics.dataframe(data.describe(include=['object']))
 
     st.header("Chat with your data!")
     user_query = st.text_input("Ask a question about your dataset:")
